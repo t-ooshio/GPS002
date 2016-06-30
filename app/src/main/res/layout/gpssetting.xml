@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="fill_parent" 
+    android:layout_width="fill_parent" 
+    android:orientation="vertical"
+    >
+
+	<ScrollView android:id="@+id/ScrollView01"
+		android:layout_width="fill_parent" android:layout_height="fill_parent">
+	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    	android:layout_width="fill_parent"
+    	android:layout_height="fill_parent" android:orientation="vertical">
+	<ListView android:id="@+id/android:list" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content" 
+		/> 
+	<TextView
+		android:textStyle="bold"
+		android:layout_width="fill_parent"
+		android:text="GPS測位条件設定"
+		android:textSize="22dp"
+		android:layout_height="wrap_content"
+		android:textColor="#ffffff" 
+		android:background="#008855"
+		/>
+	<TextView
+		android:layout_width="wrap_content" 
+		android:layout_height="wrap_content" 
+		android:text="   "
+		/>
+	<Button android:id="@+id/set_GPS_button" 
+		android:text="設定更新" 
+		android:textColor="#AA0044" 
+		android:layout_width="wrap_content" 
+		android:layout_height="wrap_content"
+		android:shadowColor="#0000ff"
+		></Button>
+	<TextView
+		android:layout_width="wrap_content" 
+		android:layout_height="wrap_content" 
+		android:text="   "
+		/>
+    <CheckBox  android:id="@+id/ch_GPS_Use"  
+    	android:layout_width="fill_parent"  
+    	android:layout_height="wrap_content"  
+		android:text="GPS測位の実施" 
+    	android:checked="true"/>
+	<TextView
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:text="測位間隔(秒)"
+		android:textStyle="bold"
+		android:textSize="20dp"
+		android:textColor="#ffffff"
+		/>
+	<EditText android:id="@+id/edit_GPS_IntervalText"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:inputType="number"
+		/>
+	<TextView
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:text="タイムアウト(秒)"
+		android:textStyle="bold"
+		android:textSize="20dp"
+		android:textColor="#ffffff"
+		/>
+	<EditText android:id="@+id/edit_GPS_TimeoutText"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:inputType="number"
+		/>
+	<TextView
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:text="測位回数 (0：回数制限なし)"
+		android:textStyle="bold"
+		android:textSize="20dp"
+		android:textColor="#ffffff"
+		/>
+	<EditText android:id="@+id/edit_GPS_MtimesText"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content" 
+		android:inputType="number"
+		/>
+	<TextView
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:text="アシストデータ削除用XTRA時刻情報取得時間　(秒)"
+		android:textStyle="bold"
+		android:textSize="20dp"
+		android:textColor="#ffffff"
+		/>
+	<EditText android:id="@+id/edit_GPS_C1delayText"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content" 
+		android:inputType="number"
+		/>
+	<TextView
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:text="アシストデータ削除時間　(秒)"
+		android:textStyle="bold"
+		android:textSize="20dp"
+		android:textColor="#ffffff"
+		/>
+	<EditText android:id="@+id/edit_GPS_C2delayText"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content" 
+		android:inputType="number"
+		/>
+	<TextView
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:text="XTRAデータ取得時間　(秒)"
+		android:textStyle="bold"
+		android:textSize="20dp"
+		android:textColor="#ffffff"
+		/>
+	<EditText android:id="@+id/edit_GPS_GdelayText"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content" 
+		android:inputType="number"
+		/>
+	<TextView
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:text="測位開始遅延時間　(秒)"
+		android:textStyle="bold"
+		android:textSize="20dp"
+		android:textColor="#ffffff"
+		/>
+	<EditText android:id="@+id/edit_GPS_MdelayText"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content" 
+		android:inputType="number"
+		/>
+
+	<TextView
+		android:textStyle="bold"
+		android:layout_width="fill_parent"
+		android:text=""
+		android:textSize="1dp"
+		android:layout_height="wrap_content"
+		android:textColor="#ffffff" 
+		android:background="#ffffff"
+		/>
+	
+	<RadioGroup android:id="@+id/radio_group"
+		android:layout_height="wrap_content"
+		android:layout_width="fill_parent"
+		android:orientation="vertical"
+		>
+		<RadioButton android:id="@+id/radio_GPS"
+			android:layout_height="wrap_content"
+			android:text="GPSプロバイダー"
+			android:layout_width="fill_parent"
+			android:checked="true"
+			/>
+		<RadioButton android:id="@+id/radio_NET"
+			android:text="NetWorkプロバイダー" 
+			android:layout_width="fill_parent" 
+			android:layout_height="wrap_content" 
+			/>
+		<RadioButton android:id="@+id/radio_PASS"
+			android:text="Passiveプロバイダー" 
+			android:layout_width="fill_parent" 
+			android:layout_height="wrap_content" 
+			/>
+	</RadioGroup>
+	
+	<TextView
+		android:textStyle="bold"
+		android:layout_width="fill_parent"
+		android:text=""
+		android:textSize="1dp"
+		android:layout_height="wrap_content"
+		android:textColor="#ffffff" 
+		android:background="#ffffff"
+		/>
+	
+	<RadioGroup android:id="@+id/radio_group"
+		android:layout_height="wrap_content"
+		android:layout_width="fill_parent"
+		android:orientation="vertical"
+		>
+		<RadioButton android:id="@+id/radio_Mode_A"
+			android:layout_height="wrap_content"
+			android:text="測位モードA (測位間隔周期で測位する)"
+			android:layout_width="fill_parent"
+			android:textSize="14dp"
+			android:checked="true"
+			android:textColor="#ffffff"
+			/>
+		<RadioButton android:id="@+id/radio_Mode_B"
+			android:text="測位モードB (測位完了後、測位間隔経過で次測位を開始)" 
+			android:layout_width="fill_parent" 
+			android:textSize="14dp"
+			android:layout_height="wrap_content" 
+			android:textColor="#ffffff"
+			/>
+		<RadioButton android:id="@+id/radio_Mode_C"
+			android:text="測位モードC (Single Shot)" 
+			android:layout_width="fill_parent" 
+			android:textSize="14dp"
+			android:layout_height="wrap_content" 
+			android:textColor="#ffffff"
+			/>
+		<RadioButton android:id="@+id/radio_Mode_D"
+			android:text="測位モードD (トラッキング測位モード)" 
+			android:layout_width="fill_parent" 
+			android:textSize="14dp"
+			android:layout_height="wrap_content" 
+			android:textColor="#ffffff"
+			/>
+	</RadioGroup>
+	
+	<TextView
+		android:textStyle="bold"
+		android:layout_width="fill_parent"
+		android:text=""
+		android:textSize="1dp"
+		android:layout_height="wrap_content"
+		android:textColor="#ffffff" 
+		android:background="#ffffff"
+		/>
+		
+	<CheckBox android:id="@+id/ch_GPS_Cold_Start_Qual"
+		android:layout_height="wrap_content" 
+		android:text="GPS測位コールドスタート (Qualcommチップ搭載機用)" 
+		android:textSize="14dp"
+		android:layout_width="fill_parent" 
+		android:checked="false"
+		/>
+	<CheckBox android:id="@+id/ch_GPS_Cold_Start_Other"
+		android:layout_height="wrap_content" 
+		android:text="GPS測位コールドスタート (その他メーカチップ搭載機用)" 
+		android:textSize="14dp"
+		android:layout_width="fill_parent" 
+		android:checked="false"
+		/>
+	
+	<TextView
+		android:textStyle="bold"
+		android:layout_width="fill_parent"
+		android:text=""
+		android:textSize="1dp"
+		android:layout_height="wrap_content"
+		android:textColor="#ffffff" 
+		android:background="#ffffff"
+		/>
+	
+	<CheckBox android:id="@+id/ch_GPS_OneXTRA_Timer"
+		android:layout_height="wrap_content" 
+		android:text="GPSOneXTRA 時間情報強制取得" 
+		android:layout_width="fill_parent" 
+		android:checked="false"
+		/>
+	<CheckBox android:id="@+id/ch_GPS_OneXTRA_Data"
+		android:layout_height="wrap_content" 
+		android:text="GPSOneXTRA XTRAデータ強制取得" 
+		android:layout_width="fill_parent" 
+		android:checked="false"
+		/>
+
+	<TextView
+		android:textStyle="bold"
+		android:layout_width="fill_parent"
+		android:text=""
+		android:textSize="1dp"
+		android:layout_height="wrap_content"
+		android:textColor="#ffffff" 
+		android:background="#ffffff"
+		/>
+	
+	<CheckBox android:id="@+id/ch_GPS_MAP"
+		android:layout_height="wrap_content" 
+		android:text="GoogleMAPの表示" 
+		android:layout_width="fill_parent" 
+		android:checked="false"
+		/>
+    <CheckBox  android:id="@+id/ch_GPS_Log"  
+    	android:layout_width="fill_parent"  
+    	android:layout_height="wrap_content"  
+		android:text="GPS測位ログの保存" 
+    	android:checked="true"
+    	/>
+	</LinearLayout>
+	</ScrollView>
+</LinearLayout>

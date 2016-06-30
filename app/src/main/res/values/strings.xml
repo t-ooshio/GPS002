@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">サノアプリ その02 Ver.002</string>
+    <string name="GPSSetting_app_name">GPSSetting</string>
+    <string name="menu1">GPS測位条件設定</string>
+    <string name="menu2">GPSデータ書き出し</string>
+    <string name="PREF_KEY">SanoApp002Pref</string>
+    <string name="GPS_m"			>GPS測位フラグ</string>
+    <string name="GPS_m_interval"	>GPS測位測位間隔</string>
+    <string name="GPS_m_timeout"	>GPS測位タイムアウト時間</string>
+    <string name="GPS_m_mtimes"		>GPS測位設定測位回数</string>
+    <string name="GPS_c1_delay"		>GPS測位アシストデータ削除用XTRA時刻データ取得時間</string>
+    <string name="GPS_c2_delay"		>GPS測位アシストデータ削除時間</string>
+    <string name="GPS_g_delay"		>GPS測位XTRAデータ取得時間</string>
+    <string name="GPS_m_delay"		>GPS測位開始遅延時間</string>
+    <string name="GPS_Log_Flg"		>GPS測位ログ保存フラグ</string>
+    <string name="GPS_Use_Flg"		>GPS測位_使用フラグ</string>
+    <string name="GPS_Cold_Start_Qual_Flg"	>GPS測位_コールド_Qualcomチップ用_スタートフラグ</string>
+    <string name="GPS_Cold_Start_Other_Flg"	>GPS測位_コールド_その他チップ用_スタートフラグ</string>
+    <string name="GPS_OneXTRA_Timer_Flg">GPSOneXTRA時間情報強制取得フラグ</string>
+    <string name="GPS_OneXTRA_Data_Flg"	>GPSOneXTRAデータ強制取得フラグ</string>
+    <string name="GPS_MAP_Flg"		>GPS測位_地図表示フラグ</string>
+    <string name="GPS_Mode_Flg"		>GPS測位_測位モードフラグ</string>
+    <string name="gps_Flg"			>GPSプロバイダ測位フラグ</string>
+    <string name="net_Flg"			>NetWorkプロバイダ測位フラグ</string>
+    <string name="passive_Flg"		>Passiveプロバイダ測位フラグ</string>
+    <string name="IDO"				>緯度</string>
+    <string name="KEIDO"			>経度</string>
+    <string name="success_num"		>GPS測位成功回数</string>
+    <string name="total_num"		>GPS測位測位回数</string>
+    <string name="timer_state"		>GPS測位タイマー状態</string>
+    <string name="GPS_m_no"			>GPS測位累計回数</string>
+    <string name="file_name"		>ファイル名</string>
+    <string name="ONbtn_Push_time"	>ONボタン押下時間</string>
+</resources>

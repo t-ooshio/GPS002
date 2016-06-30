@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout 
+	xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="fill_parent" 
+    android:layout_width="fill_parent" 
+    android:orientation="vertical"
+    >
+	<TextView
+		android:textStyle="bold"
+		android:layout_width="fill_parent"
+		android:text="サノアプリ その02 Ver.002"
+		android:textSize="22dp"
+		android:layout_height="wrap_content"
+		android:textColor="#ffffff" 
+		android:background="#AA5577"
+		/>
+	<LinearLayout android:layout_width="fill_parent" 
+		android:layout_gravity="top" android:layout_height="wrap_content" 
+		android:baselineAligned="false" android:id="@+id/linearLayout1" 
+		android:orientation="horizontal">
+		<ToggleButton android:id="@+id/tbtn_on"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="ON"
+			android:textOff="ON"
+			android:textOn="ON"
+			android:checked="false"
+		></ToggleButton>
+		<ToggleButton android:id="@+id/tbtn_off"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="OFF"
+			android:textOff="OFF"
+			android:textOn="OFF"
+			android:checked="true"
+		></ToggleButton>
+        <TextView
+        	android:layout_width="wrap_content" 
+        	android:layout_height="wrap_content" 
+        	android:text="          "
+        	/>
+<!-- 
+		<TextView android:id="@+id/tx_state"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center"
+			android:layout_width="fill_parent"
+			android:text="停止中"
+			android:textSize="25dp"
+			android:textStyle="bold"
+			android:textColor="#00ffff"
+		/>
+-->
+	</LinearLayout>
+	<TextView
+		android:textStyle="bold"
+		android:layout_width="fill_parent"
+		android:text="GPS測位測位状態"
+		android:textSize="18dp"
+		android:layout_height="wrap_content"
+		android:textColor="#ffffff" 
+		android:background="#AA5577"
+		/>
+	<TextView android:id="@+id/tx_state"
+		android:layout_height="wrap_content"
+		android:layout_width="fill_parent"
+		android:text="　停止中"
+		android:textSize="25dp"
+		android:textStyle="bold"
+		android:textColor="#00ffff"
+	/>
+	<TextView
+		android:id="@+id/tx_IDO"
+		android:layout_height="wrap_content"
+		android:layout_width="fill_parent"
+		android:textSize="18dp"
+		android:text="●緯度：  ―"
+		android:textColor="#ffffff" 
+		></TextView>
+	<TextView
+		android:id="@+id/tx_KEIDO"
+		android:layout_height="wrap_content"
+		android:layout_width="fill_parent"
+		android:textSize="18dp"
+		android:text="●経度：  ―"
+		android:textColor="#ffffff" 
+		></TextView>
+	<TextView
+		android:id="@+id/tx_NUM"
+		android:layout_height="wrap_content"
+		android:layout_width="fill_parent"
+		android:textSize="18dp"
+		android:text="●測位回数：  ―"
+		android:textColor="#ffffff" 
+		></TextView>
+	<TextView android:id="@+id/tx_setting"
+		android:layout_height="wrap_content"
+		android:layout_width="fill_parent"
+		android:text="●測位モードA　Cold設定" 
+		android:textSize="18dp"
+		android:textColor="#ffffff" 
+	/>
+	<TextView
+		android:textStyle="bold"
+		android:layout_width="fill_parent"
+		android:textSize="12dp"
+		android:layout_height="wrap_content"
+		android:textColor="#ffffff" 
+		android:background="#AA5577"
+		/>
+	<!--
+    android:apiKey="AIzaSyB-C42e0iNI_n53OYQ2qTP34N146CzbJDk"（デバック用）
+    android:apiKey="AIzaSyA4dHY0AKTuS3acYLzj2_oe6Vz8K4n8Iww"(リリース用)
+-->
+		<TextView
+		android:textStyle="bold"
+		android:layout_width="fill_parent"
+		android:text="  "
+		android:layout_height="wrap_content"
+		android:textColor="#ffffff" 
+		android:background="#000000"
+		/>
+ </LinearLayout>
