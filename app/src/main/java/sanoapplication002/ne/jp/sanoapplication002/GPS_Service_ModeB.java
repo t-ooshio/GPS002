@@ -1,15 +1,9 @@
 package sanoapplication002.ne.jp.sanoapplication002;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
-
-//import jp.ne.SANOApplication002.GPS_Service.RestartTimerTask;
 
 import android.app.AlarmManager;
 import android.app.ListActivity;
@@ -28,10 +22,10 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+import android.util.Log;
 import android.widget.Toast;
 
-public class GPS_Service_ModeB extends Service implements LocationListener
-{
+public class GPS_Service_ModeB extends Service implements LocationListener {
 
 	private LocationManager lm	= null;					// LocationManager
 	private Timer mTimer	= null;						// 停止タイマ
@@ -110,8 +104,7 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 	private boolean Delay_mStart_Flg;					// 測位開始遅延タイマー完了フラグ 
 
 
-	class GPS_Service_ModeB_Binder extends Binder
-	{
+	class GPS_Service_ModeB_Binder extends Binder {
 		GPS_Service_ModeB getService()
 		{
 			return GPS_Service_ModeB.this;
@@ -121,8 +114,7 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 	public static final String Timer = "GPS timer B";
 
 	@Override
-	public void onCreate()
-	{
+	public void onCreate() {
 		super.onCreate();
 		
 		bundle					= new Bundle();
@@ -152,8 +144,7 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 		rTimer					= null;
 
 		// サービスがKillされるのを防止する処理 ⇒ 2011.10.11 ？？？なぜこれでKill防止になるのか不明？？？
-		if (!alarmManagerFLG)
-		{
+		if (!alarmManagerFLG) {
 			Intent i = new Intent();
 			i.setClassName(this.getPackageName(), this.getPackageName() + ".ServiceGPS");
 			pi = PendingIntent.getService(this, 0, i, 0);
@@ -169,8 +160,7 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 		}
 
 		// パワーマネージャでスリープ時のコールドを防止
-		if (!CPULockFlg)
-		{
+		if (!CPULockFlg) {
 			PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 			wakelock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "My Tag");
 			wakelock.acquire();
@@ -187,8 +177,7 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 	}
 
 	@Override
-	public void onStart(Intent intent, int startId)
-	{
+	public void onStart(Intent intent, int startId) {
 		super.onStart(intent, startId);
 
 		measure_num				= 0;
@@ -242,41 +231,34 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 		_PrefEditor.commit();
 
 		m_Start();
-
 	}
 		
 
-	public void m_Start()
-	{
+	public void m_Start() {
 
 		// 測位開始時刻2を取得
-		if (Startcalendar2 == null)
+		if (Startcalendar2 == null) {
 			Startcalendar2 = Calendar.getInstance();
-
-		if (lm != null)
-		{
+		}
+		if (lm != null) {
 			lm.removeUpdates(this);
 			lm = null;
 		}
 		
-		if (mTimer != null)
-		{
+		if (mTimer != null) {
 			mTimer.cancel();
 			mTimer = null;
 		}
 
-		if (rTimer != null)
-		{
+		if (rTimer != null) {
 			rTimer.cancel();
 			rTimer = null;
 		}
 
 		// ローケーション取得条件の設定
-		if (gps_Flg == 1) // GPSプロバイダが選択された ※めんどいから遅延時間はSleepで。直しはいずれ。
-		{
+		if (gps_Flg == 1){ // GPSプロバイダが選択された ※めんどいから遅延時間はSleepで。直しはいずれ。
 			lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-			if(GPS_Cold_Start_Qual_Flg == 1)// コールドスタート(Qualcomチップ用)ON？
-			{
+			if(GPS_Cold_Start_Qual_Flg == 1){// コールドスタート(Qualcomチップ用)ON？
 				lm.sendExtraCommand(LocationManager.GPS_PROVIDER,"force_time_injection",null);
 
 				// アシストデータ削除用XTRA時刻情報取得時間
@@ -293,8 +275,7 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 		    	}catch(InterruptedException e){
 			    }
 			}
-			else if(GPS_Cold_Start_Other_Flg == 1)// コールドスタート(その他チップ用)ON？
-			{
+			else if(GPS_Cold_Start_Other_Flg == 1){// コールドスタート(その他チップ用)ON？
 		    	lm.sendExtraCommand(LocationManager.GPS_PROVIDER,"delete_aiding_data",null);
 
 		    	// アシストデータ削除時間
@@ -305,27 +286,26 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 			}
 
 			
-			if (GPS_OneXTRA_Timer_Flg == 1)	// GPSOneXTRA時間情報強制取得
-			{
+			if (GPS_OneXTRA_Timer_Flg == 1){	// GPSOneXTRA時間情報強制取得
 				EXTRA_Time_Flg = lm.sendExtraCommand(LocationManager.GPS_PROVIDER,"force_time_injection",null);
-				if (EXTRA_Time_Flg)
+				if (EXTRA_Time_Flg) {
 					Toast.makeText(PublicContext, "GPSoneXTRA時間情報取得成功", Toast.LENGTH_SHORT).show();
-				else
+				}else {
 					Toast.makeText(PublicContext, "GPSoneXTRA時間情報取得失敗", Toast.LENGTH_SHORT).show();
+				}
 			}
 			
-			if (GPS_OneXTRA_Data_Flg == 1)	// GPSOneXTRA XTRAデータ強制取得
-			{
+			if (GPS_OneXTRA_Data_Flg == 1){	// GPSOneXTRA XTRAデータ強制取得
 				EXTRA_Data_Flg = lm.sendExtraCommand(LocationManager.GPS_PROVIDER,"force_xtra_injection",null);
-				if (EXTRA_Data_Flg)
+				if (EXTRA_Data_Flg) {
 					Toast.makeText(PublicContext, "GPSoneXTRAデータ取得成功", Toast.LENGTH_SHORT).show();
-				else
+				}else {
 					Toast.makeText(PublicContext, "GPSoneXTRAデータ取得失敗", Toast.LENGTH_SHORT).show();
+				}
 			}
 			
 			// XTRAデータ取得がONなら取得遅延時間発生
-			if ((GPS_OneXTRA_Timer_Flg == 1) || (GPS_OneXTRA_Data_Flg == 1))
-			{
+			if ((GPS_OneXTRA_Timer_Flg == 1) || (GPS_OneXTRA_Data_Flg == 1)) {
 				// XTRAデータ取得時間
 				try{
 			    	Thread.sleep(g_delay);
@@ -340,12 +320,11 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 		    }
 	    	
 			lm.requestLocationUpdates(lm.GPS_PROVIDER, 0, 0, this);
+			Log.d(getResources().getString(R.string.TAG), getResources().getString(R.string.PosStartApiLocationUpdates));
 		}
-		else if (net_Flg == 1) // ネットワークプロバイダが選択された
-		{
+		else if (net_Flg == 1){ // ネットワークプロバイダが選択された
 			lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-			if(GPS_Cold_Start_Qual_Flg == 1)// コールドスタート(Qualcomチップ用)ON？
-			{
+			if(GPS_Cold_Start_Qual_Flg == 1){// コールドスタート(Qualcomチップ用)ON？
 				lm.sendExtraCommand(LocationManager.GPS_PROVIDER,"force_time_injection",null);
 
 				// アシストデータ削除用XTRA時刻情報取得時間
@@ -362,8 +341,7 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 		    	}catch(InterruptedException e){
 			    }
 			}
-			else if(GPS_Cold_Start_Other_Flg == 1)// コールドスタート(その他チップ用)ON？
-			{
+			else if(GPS_Cold_Start_Other_Flg == 1){// コールドスタート(その他チップ用)ON？
 		    	lm.sendExtraCommand(LocationManager.GPS_PROVIDER,"delete_aiding_data",null);
 
 		    	// アシストデータ削除時間
@@ -380,9 +358,10 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 		    }
 
 			lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+			Log.d(getResources().getString(R.string.TAG), getResources().getString(R.string.PosStartApiLocationUpdates));
+
 		}
-		else if (passive_Flg == 1) // Passiveプロバイダが選択された
-		{
+		else if (passive_Flg == 1){ // Passiveプロバイダが選択された
 			lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
 			// 測位開始遅延時間
@@ -392,79 +371,69 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 		    }
 
 			lm.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 0, 0, this);
+			Log.d(getResources().getString(R.string.TAG), getResources().getString(R.string.PosStartApiLocationUpdates));
 		}
 
-		
 		// Timer の設定をする
 		// 停止タイマーの初期化処理
-		if (mTimer == null)
-		{
+		if (mTimer == null) {
 			stoptimerTask = new StopTimerTask();
 			mTimer = new Timer(true);
 			mTimer.schedule(stoptimerTask, m_timeout);
 		}
 
 		// 測位開始時刻1を取得
-		if (Startcalendar1 == null)
+		if (Startcalendar1 == null) {
 			Startcalendar1 = Calendar.getInstance();
-
+		}
 	}
 
-	public void m_Stop()
-	{
-		if (lm != null)
-		{
+	public void m_Stop() {
+		if (lm != null) {
 			lm.removeUpdates(this);
 			lm = null;
 		}
 		
-		if (mTimer != null)
-		{
+		if (mTimer != null) {
 			mTimer.cancel();
 			mTimer = null;
 		}
 		
-		if (rTimer != null)
-		{
+		if (rTimer != null) {
 			rTimer.cancel();
 			rTimer = null;
 		}
 		
 		// アラームマネージャ停止
-		if (alarmManagerFLG)
-		{
+		if (alarmManagerFLG) {
 			alarmManagerFLG = false;
 			alarmManager.cancel(pi);
 		}
 
 		// CPUロック解放
-		if (CPULockFlg)
-		{
+		if (CPULockFlg) {
 			CPULockFlg = false;
 			wakelock.release();
 		}
 	}
 
-	public void Temporary_stop()
-	{
-		if (lm != null)
-		{
+	public void Temporary_stop() {
+		if (lm != null) {
 			lm.removeUpdates(this);
 			lm = null;
 		}
 		
-		if (mTimer != null)
-		{
+		if (mTimer != null) {
 			mTimer.cancel();
 			mTimer = null;
 		}
 	}
 
 	@Override
-	public void onLocationChanged(Location location)
-	{
-		if (timout_Flg == 0)
-		{
+	public void onLocationChanged(Location location) {
+		Log.d(getResources().getString(R.string.TAG),getResources().getString(R.string.LocationChanged));
+
+		if (timout_Flg == 0) {
 			Temporary_stop();
 
 			// 測位終了時刻を取得
@@ -510,22 +479,14 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 			writeString[23] = "";		// GoogleMAP表示フラグ
 
 			String strProvider = location.getProvider();
-			if (Log_Flg == 1)
-			{
-				try
-				{
+			if (Log_Flg == 1) {
+				try {
 					if (strProvider.equals("gps")) // GPSプロバイダが選択された
 						save("GPS_P", writeString);
 					else if (strProvider.equals("network")) // ネットワークプロバイダが選択された
 						save("NET_P", writeString);
 					else if (strProvider.equals("passive")) // Passiveプロバイダが選択された
 						save("PASS_P", writeString);
-			//		if (gps_Flg == 1) // GPSプロバイダが選択された
-			//			save("GPS_P", writeString);
-			//		else if (net_Flg == 1) // ネットワークプロバイダが選択された
-			//			save("NET_P", writeString);
-			//		else if (passive_Flg == 1) // Passiveプロバイダが選択された
-			//			save("PASS_P", writeString);
 				}
 				catch (IOException e)
 				{
@@ -533,34 +494,28 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 				}
 			}
 
-			_PrefEditor.putInt(getString(R.string.IDO), (int) (location
-					.getLatitude() * 1E6));
-			_PrefEditor.putInt(getString(R.string.KEIDO), (int) (location
-					.getLongitude() * 1E6));
+			_PrefEditor.putInt(getString(R.string.IDO), (int) (location.getLatitude() * 1E6));
+			_PrefEditor.putInt(getString(R.string.KEIDO), (int) (location.getLongitude() * 1E6));
 			_PrefEditor.putLong(getString(R.string.success_num), success_times);
 			_PrefEditor.putLong(getString(R.string.total_num), measure_num);
 
 			// 測位回数指定の場合の測位回数到達チェック
-			if ((m_mtimes > 0) && (m_mtimes == measure_num))
-			{
+			if ((m_mtimes > 0) && (m_mtimes == measure_num)) {
 				m_Stop();
 				_PrefEditor.putString(getString(R.string.timer_state),
 						"m_finish&num_over");
 			}
-			else
-			{
+			else {
 				_PrefEditor.putString(getString(R.string.timer_state),
 						"m_finish");
 
-				if (rTimer != null)
-				{
+				if (rTimer != null) {
 					rTimer.cancel();
 					rTimer = null;
 				}
 
 				// 再スタートタイマーの設定
-				if (rTimer == null)
-				{
+				if (rTimer == null) {
 					restarttimertask = new RestartTimerTask();
 					rTimer = new Timer(true);
 			
@@ -574,32 +529,23 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 			Startcalendar2 = null;
 			Endcalendar = null;
 
-			if (passive_Flg == 1) // Passiveプロバイダが選択された
-			{
+			if (passive_Flg == 1){ // Passiveプロバイダが選択された
 				Toast.makeText(PublicContext, "測位データを取得", Toast.LENGTH_SHORT).show();
 			}
 		}
 	}
 
 	// 停止タイマークラス
-	class StopTimerTask extends TimerTask
-	{
+	class StopTimerTask extends TimerTask {
 		@Override
-		public void run()
-		{
-			mHandler.post(new Runnable()
-			{
-				public void run()
-				{
-					if (success_Flg == 0)
-					{
-						_Pref = getSharedPreferences(
-								getString(R.string.PREF_KEY),
-								ListActivity.MODE_PRIVATE);
+		public void run() {
+			mHandler.post(new Runnable() {
+				public void run() {
+					if (success_Flg == 0) {
+						_Pref = getSharedPreferences(getString(R.string.PREF_KEY), ListActivity.MODE_PRIVATE);
 						_PrefEditor = _Pref.edit();
 
-						_PrefEditor.putLong(getString(R.string.total_num),
-								++measure_num);
+						_PrefEditor.putLong(getString(R.string.total_num), ++measure_num);
 
 						timout_Flg = 1;
 
@@ -638,10 +584,8 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 						writeString[22] = "";	// GPS測位モード設定フラグ
 						writeString[23] = "";	// GoogleMAP表示フラグ
 
-						if (Log_Flg == 1)
-						{
-							try
-							{
+						if (Log_Flg == 1) {
+							try {
 								if (gps_Flg == 1) // GPSプロバイダが選択された
 									save("GPS_P", writeString);
 								else if (net_Flg == 1) // ネットワークプロバイダが選択された
@@ -649,38 +593,32 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 								else if (passive_Flg == 1) // Passiveプロバイダが選択された
 									save("PASS_P", writeString);
 							}
-							catch (IOException e)
-							{
+							catch (IOException e) {
 							
 							}
 						}
 						// 測位回数指定の場合の測位回数到達チェック
-						if ((m_mtimes > 0) && (m_mtimes == measure_num))
-						{
+						if ((m_mtimes > 0) && (m_mtimes == measure_num)) {
 							m_Stop();
 							_PrefEditor.putString(
 									getString(R.string.timer_state),
 									"timeout&num_over");
 						}
-						else
-						{
+						else {
 							_PrefEditor.putString(
 									getString(R.string.timer_state), "timeout");
-							if (rTimer != null)
-							{
+							if (rTimer != null) {
 								rTimer.cancel();
 								rTimer = null;
 							}
 
 							// 再スタートタイマーの設定
-							if (rTimer == null)
-							{
+							if (rTimer == null) {
 								restarttimertask = new RestartTimerTask();
 								rTimer = new Timer(true);
 						
 								rTimer.schedule(restarttimertask, m_interval);
 							}
-					
 						}
 						
 						_PrefEditor.commit();
@@ -689,8 +627,7 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 						Startcalendar1 = null;
 						Startcalendar2 = null;
 						Endcalendar = null;
-						if (passive_Flg == 1) // Passiveプロバイダが選択された
-						{
+						if (passive_Flg == 1){ // Passiveプロバイダが選択された
 							Toast.makeText(PublicContext, "測位データ取得失敗", Toast.LENGTH_SHORT).show();
 						}
 					}	
@@ -700,11 +637,9 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 	}
 
 	// 再開始タイマークラス
-	class RestartTimerTask extends TimerTask
-	{
+	class RestartTimerTask extends TimerTask {
 		@Override
-		public void run()
-		{
+		public void run() {
 			rHandler.post(new Runnable()
 			{
 				public void run()
@@ -713,62 +648,40 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 					timout_Flg = 0;
 					m_Start();
 
-					_Pref = getSharedPreferences(getString(R.string.PREF_KEY),
-							ListActivity.MODE_PRIVATE);
+					_Pref = getSharedPreferences(getString(R.string.PREF_KEY), ListActivity.MODE_PRIVATE);
 					_PrefEditor = _Pref.edit();
 
-					_PrefEditor.putString(getString(R.string.timer_state),
-							"Re_start");
+					_PrefEditor.putString(getString(R.string.timer_state), "Re_start");
 					_PrefEditor.commit();
 					sendBroadcast(new Intent(Timer));
 				}
 			});
 		}
 	}
-	
-	// ファイル書き込み処理
-	/*
-	 * public void save(String FileSort,String WriteDate) throws IOException {
-	 * 
-	 * sPath = "/sdcard/" + this.getPackageName(); String FName = sPath + "/" +
-	 * Filename + "_" + FileSort + ".txt";
-	 * 
-	 * File files = new File(FName); files.getParentFile().mkdir();
-	 * 
-	 * Calendar calendar = Calendar.getInstance(); String writeString =
-	 * String.valueOf(calendar.get(Calendar.YEAR)) + "/" +
-	 * String.valueOf(calendar.get(Calendar.MONTH)) + "/" +
-	 * String.valueOf(calendar.get(Calendar.DAY_OF_MONTH)) + "/" +
-	 * String.valueOf(calendar.get(Calendar.HOUR_OF_DAY)) + ":" +
-	 * String.valueOf(calendar.get(Calendar.MINUTE)) + ":" +
-	 * String.valueOf(calendar.get(Calendar.SECOND)) + "." +
-	 * String.valueOf(calendar.get(Calendar.MILLISECOND)) + "," + WriteDate +
-	 * "\n\r";
-	 * 
-	 * FileOutputStream fos = new FileOutputStream(files, true);
-	 * OutputStreamWriter osw = new OutputStreamWriter(fos, "UTF-8");
-	 * BufferedWriter bw = new BufferedWriter(osw);
-	 * 
-	 * bw.write(writeString); bw.flush(); bw.close(); }
-	 */
-	public void save(String FileSort, String[] WriteDate) throws IOException
-	{
+
+	/**
+	 * ファイルの書き込み処理
+ 	 * @param FileSort
+	 * @param WriteDate
+	 * @throws IOException
+     */
+    public void save(String FileSort, String[] WriteDate) throws IOException {
 
 		// 測位終了時刻
 		Calendar calendar = Calendar.getInstance();
-		String strBuff = String.valueOf(calendar.get(Calendar.YEAR))	+ "/"
-				+ String.valueOf(calendar.get(Calendar.MONTH) + 1)		+ "/"
-				+ String.valueOf(calendar.get(Calendar.DAY_OF_MONTH))	+ "/"
-				+ String.valueOf(calendar.get(Calendar.HOUR_OF_DAY))	+ ":"
-				+ String.valueOf(calendar.get(Calendar.MINUTE))			+ ":"
-				+ String.valueOf(calendar.get(Calendar.SECOND))			+ "."
+		String strBuff = String.valueOf(calendar.get(Calendar.YEAR)) + "/"
+				+ String.valueOf(calendar.get(Calendar.MONTH) + 1) + "/"
+				+ String.valueOf(calendar.get(Calendar.DAY_OF_MONTH)) + "/"
+				+ String.valueOf(calendar.get(Calendar.HOUR_OF_DAY)) + ":"
+				+ String.valueOf(calendar.get(Calendar.MINUTE)) + ":"
+				+ String.valueOf(calendar.get(Calendar.SECOND)) + "."
 				+ String.valueOf(calendar.get(Calendar.MILLISECOND));
 
 		WriteDate[0] = strBuff;
 
 		// 測位時間差1
 		long diffTime1 = Endcalendar.getTimeInMillis() - Startcalendar1.getTimeInMillis();
-		
+
 		// ミリ秒
 		long msecond = diffTime1 % 1000;
 		// 秒
@@ -780,14 +693,12 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 
 		// 測位時間差2
 		long diffTime2;
-		if(FirstMeasureFLG)
-		{
+		if (FirstMeasureFLG) {
 			diffTime2 = Endcalendar.getTimeInMillis() - ONbtnPushTime;
 			FirstMeasureFLG = false;
-		}
-		else
+		} else{
 			diffTime2 = Endcalendar.getTimeInMillis() - Startcalendar2.getTimeInMillis();
-
+		}
 		// ミリ秒
 		msecond = diffTime2 % 1000;
 		// 秒
@@ -798,31 +709,25 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 		WriteDate[6] = String.valueOf(minute * 60 + second) + "." + String.valueOf(msecond);
 
 		// 測位種別("G":GPSプロバイダー、"N":NetWorkプロバイダー、"P":Passiveプロバイダー)
-		if (FileSort.equals("GPS_P"))
-		{
+		if (FileSort.equals("GPS_P")) {
 			WriteDate[7] = "G";
 		}
-		else if (FileSort.equals("NET_P"))
-		{
+		else if (FileSort.equals("NET_P")) {
 			WriteDate[7] = "N";
 		}
-		else if (FileSort.equals("PASS_P"))
-		{
+		else if (FileSort.equals("PASS_P")) {
 			WriteDate[7] = "P";
 		}
 
 		// 最初の測位成功時であれば、累計回数を+1する
-		if (!First_m_Flg)
-		{
+		if (!First_m_Flg) {
 			First_m_Flg = true;
 			++_defm_total_num;
-			_PrefEditor.putString(getString(R.string.GPS_m_no), String
-					.valueOf(_defm_total_num));
+			_PrefEditor.putString(getString(R.string.GPS_m_no), String.valueOf(_defm_total_num));
 			_PrefEditor.commit();
 		}
 		WriteDate[8] = String.valueOf(_defm_total_num);
 
-		
 		// 測位間隔設定値
 		WriteDate[9] = String.valueOf(m_interval/1000);	
 		
@@ -929,38 +834,32 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 	}
 
 	@Override
-	public void onDestroy()
-	{
+	public void onDestroy() {
 		super.onDestroy();
 		
-		if (lm != null)
-		{
+		if (lm != null) {
 			lm.removeUpdates(this);
 			lm = null;
 		}
 		
-		if (mTimer != null)
-		{
+		if (mTimer != null) {
 			mTimer.cancel();
 			mTimer = null;
 		}
 		
-		if (rTimer != null)
-		{
+		if (rTimer != null) {
 			rTimer.cancel();
 			rTimer = null;
 		}
 
 		// アラームマネージャ停止
-		if (alarmManagerFLG)
-		{
+		if (alarmManagerFLG) {
 			alarmManagerFLG = false;
 			alarmManager.cancel(pi);
 		}
 
 		// CPUロック解放
-		if (CPULockFlg)
-		{
+		if (CPULockFlg) {
 			CPULockFlg = false;
 			wakelock.release();
 		}
@@ -997,5 +896,4 @@ public class GPS_Service_ModeB extends Service implements LocationListener
 		// TODO Auto-generated method stub
 
 	}
-
 }

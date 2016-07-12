@@ -1,5 +1,7 @@
 package sanoapplication002.ne.jp.sanoapplication002;
 
+import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.app.ListActivity;
 import android.content.BroadcastReceiver;
@@ -9,11 +11,15 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -92,6 +98,7 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
 
     private boolean visible = true;
 
+
     private Calendar ONbtnPushcalendar			= null;		// ボタン押下時の時間
 
 
@@ -110,6 +117,8 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
     public static int _GPS_defm_MAP				= 0;		// GoogleMAP表示フラグ
     public static long _defonbtn_push_time		= 0;		// ONボタン押下時の時間
 
+    private static final String TAG = "SanoApplication002";
+
     public static final int SETTING_MENU = 0;
     /************************************************************************/
 	/* サービスからのイベント受信処理 */
@@ -126,58 +135,53 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
             _GPS_defm_MAP = _Pref.getInt(getString(R.string.GPS_MAP_Flg), _GPS_defm_MAP);
 
             // 測位終了 or 測位終了+測位回数オーバー
-            if (str_buff.equals("m_finish")
-                    || str_buff.equals("m_finish&num_over")) {
+            if (str_buff.equals("m_finish") || str_buff.equals("m_finish&num_over")) {
 
                 measure_num = _Pref.getLong(getString(R.string.total_num), 0);
-                success_times = _Pref
-                        .getLong(getString(R.string.success_num), 0);
+                success_times = _Pref.getLong(getString(R.string.success_num), 0);
                 IDO = (_Pref.getInt(getString(R.string.IDO), 0)) / 1E6;
                 KEIDO = (_Pref.getInt(getString(R.string.KEIDO), 0)) / 1E6;
 
                 tx_IDO.setText("●緯度：  " + Double.toString(IDO));
                 tx_KEIDO.setText("●経度：  " + Double.toString(KEIDO));
 
-                if (m_mtimes > 0) // 回数指定あり
-                {
+                if (m_mtimes > 0){ // 回数指定あり
                     tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                             + " / " + String.valueOf(m_mtimes) + "(成功回数： "
                             + String.valueOf(success_times) + ")");
                 }
 
-                else // 回数指定なし
-                {
+                else{ // 回数指定なし
                     tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                             + " / ∞" + "(成功回数： "
                             + String.valueOf(success_times) + ")");
                 }
 
                 // 測位回数指定の場合の測位回数到達チェック
-                if (str_buff.equals("m_finish&num_over"))
+                if (str_buff.equals("m_finish&num_over")) {
                     tx_state.setText("　停止中");
-                else
+                    Log.d(getResources().getString(R.string.TAG),getResources().getString(R.string.PosStop));
+                }else {
                     tx_state.setText("　一時停止中");
-
+                    Log.d(getResources().getString(R.string.TAG),getResources().getString(R.string.PosStop));
+                }
             }
             // タイムアウト or タイムアウト+測位回数オーバー
-            else if (str_buff.equals("timeout")
-                    || str_buff.equals("timeout&num_over")) {
+            else if (str_buff.equals("timeout") || str_buff.equals("timeout&num_over")) {
 
                 tx_IDO.setText("●緯度：  タイムアウト");
                 tx_KEIDO.setText("●経度：  タイムアウト");
                 measure_num = _Pref.getLong(getString(R.string.total_num), 0);
-                success_times = _Pref
-                        .getLong(getString(R.string.success_num), 0);
+                success_times = _Pref.getLong(getString(R.string.success_num), 0);
 
-                if (m_mtimes > 0) // 回数指定あり
-                {
+                Log.d(getResources().getString(R.string.TAG),getResources().getString(R.string.PosTimeOut));
+
+                if (m_mtimes > 0){ // 回数指定あり
                     tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                             + " / " + String.valueOf(m_mtimes) + "(成功回数： "
                             + String.valueOf(success_times) + ")");
                 }
-
-                else // 回数指定なし
-                {
+                else{ // 回数指定なし
                     tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                             + " / ∞" + "(成功回数： "
                             + String.valueOf(success_times) + ")");
@@ -188,13 +192,11 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
                     tx_state.setText("　停止中");
                 else
                     tx_state.setText("　一時停止中");
-
             }
             // 測位再開
             else if (str_buff.equals("start") || str_buff.equals("Re_start")) {
                 tx_state.setText("　測位中");
             }
-
         }
     }
 
@@ -208,12 +210,10 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
             GPS_Service_ModeA = ((GPS_Service_ModeA.GPS_Service_ModeA_Binder) service)
                     .getService();
         }
-
         @Override
         public void onServiceDisconnected(ComponentName className) {
             GPS_Service_ModeA = null;
         }
-
     };
 
     class GPS_ServiceReceiver_ModeB extends BroadcastReceiver {
@@ -221,14 +221,12 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
         public void onReceive(Context context, Intent intent) {
             _Pref = getSharedPreferences(getString(R.string.PREF_KEY),
                     ListActivity.MODE_PRIVATE);
-            String str_buff = _Pref.getString(getString(R.string.timer_state),
-                    "None");
+            String str_buff = _Pref.getString(getString(R.string.timer_state), "None");
 
             _GPS_defm_MAP = _Pref.getInt(getString(R.string.GPS_MAP_Flg), _GPS_defm_MAP);
 
             // 測位終了 or 測位終了+測位回数オーバー
-            if (str_buff.equals("m_finish")
-                    || str_buff.equals("m_finish&num_over")) {
+            if (str_buff.equals("m_finish") || str_buff.equals("m_finish&num_over")) {
 
                 measure_num = _Pref.getLong(getString(R.string.total_num), 0);
                 success_times = _Pref
@@ -238,16 +236,16 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
 
                 tx_IDO.setText("●緯度：  " + Double.toString(IDO));
                 tx_KEIDO.setText("●経度：  " + Double.toString(KEIDO));
+                Log.d(getResources().getString(R.string.TAG),getResources().getString(R.string.PosSuccess));
 
-                if (m_mtimes > 0) // 回数指定あり
-                {
+                if (m_mtimes > 0) { // 回数指定あり
+
                     tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                             + " / " + String.valueOf(m_mtimes) + "(成功回数： "
                             + String.valueOf(success_times) + ")");
                 }
 
-                else // 回数指定なし
-                {
+                else{ // 回数指定なし
                     tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                             + " / ∞" + "(成功回数： "
                             + String.valueOf(success_times) + ")");
@@ -261,24 +259,20 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
 
             }
             // タイムアウト or タイムアウト+測位回数オーバー
-            else if (str_buff.equals("timeout")
-                    || str_buff.equals("timeout&num_over")) {
-
+            else if (str_buff.equals("timeout") || str_buff.equals("timeout&num_over")) {
                 tx_IDO.setText("●緯度：  タイムアウト");
                 tx_KEIDO.setText("●経度：  タイムアウト");
                 measure_num = _Pref.getLong(getString(R.string.total_num), 0);
-                success_times = _Pref
-                        .getLong(getString(R.string.success_num), 0);
+                success_times = _Pref.getLong(getString(R.string.success_num), 0);
 
-                if (m_mtimes > 0) // 回数指定あり
-                {
+                Log.d(getResources().getString(R.string.TAG),getResources().getString(R.string.PosTimeOut));
+
+                if (m_mtimes > 0){ // 回数指定あり
                     tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                             + " / " + String.valueOf(m_mtimes) + "(成功回数： "
                             + String.valueOf(success_times) + ")");
                 }
-
-                else // 回数指定なし
-                {
+                else{ // 回数指定なし
                     tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                             + " / ∞" + "(成功回数： "
                             + String.valueOf(success_times) + ")");
@@ -289,13 +283,11 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
                     tx_state.setText("　停止中");
                 else
                     tx_state.setText("　一時停止中");
-
             }
             // 測位再開
             else if (str_buff.equals("start") || str_buff.equals("Re_start")) {
                 tx_state.setText("　測位中");
             }
-
         }
     }
 
@@ -320,20 +312,16 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
     class GPS_ServiceReceiver_ModeC extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            _Pref = getSharedPreferences(getString(R.string.PREF_KEY),
-                    ListActivity.MODE_PRIVATE);
-            String str_buff = _Pref.getString(getString(R.string.timer_state),
-                    "None");
+            _Pref = getSharedPreferences(getString(R.string.PREF_KEY), ListActivity.MODE_PRIVATE);
+            String str_buff = _Pref.getString(getString(R.string.timer_state),"None");
 
             _GPS_defm_MAP = _Pref.getInt(getString(R.string.GPS_MAP_Flg), _GPS_defm_MAP);
 
             // 測位終了 or 測位終了+測位回数オーバー
-            if (str_buff.equals("m_finish")
-                    || str_buff.equals("m_finish&num_over")) {
+            if (str_buff.equals("m_finish") || str_buff.equals("m_finish&num_over")) {
 
                 measure_num = _Pref.getLong(getString(R.string.total_num), 0);
-                success_times = _Pref
-                        .getLong(getString(R.string.success_num), 0);
+                success_times = _Pref.getLong(getString(R.string.success_num), 0);
                 IDO = (_Pref.getInt(getString(R.string.IDO), 0)) / 1E6;
                 KEIDO = (_Pref.getInt(getString(R.string.KEIDO), 0)) / 1E6;
 
@@ -342,37 +330,36 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
 
                 tx_NUM.setText("●測位回数：Single Shot");
 
+                Log.d(getResources().getString(R.string.TAG),getResources().getString(R.string.PosSuccess));
+
                 // 測位回数指定の場合の測位回数到達チェック
                 if (str_buff.equals("m_finish&num_over"))
                     tx_state.setText("　停止中");
                 else
                     tx_state.setText("　一時停止中");
-
             }
             // タイムアウト or タイムアウト+測位回数オーバー
-            else if (str_buff.equals("timeout")
-                    || str_buff.equals("timeout&num_over")) {
+            else if (str_buff.equals("timeout") || str_buff.equals("timeout&num_over")) {
 
                 tx_IDO.setText("●緯度：  タイムアウト");
                 tx_KEIDO.setText("●経度：  タイムアウト");
                 measure_num = _Pref.getLong(getString(R.string.total_num), 0);
-                success_times = _Pref
-                        .getLong(getString(R.string.success_num), 0);
+                success_times = _Pref.getLong(getString(R.string.success_num), 0);
 
                 tx_NUM.setText("●測位回数：Single Shot");
+
+                Log.d(getResources().getString(R.string.TAG),getResources().getString(R.string.PosTimeOut));
 
                 // 測位回数指定の場合の測位回数到達チェック
                 if (str_buff.equals("timeout&num_over"))
                     tx_state.setText("　停止中");
                 else
                     tx_state.setText("　一時停止中");
-
             }
             // 測位再開
             else if (str_buff.equals("start") || str_buff.equals("Re_start")) {
                 tx_state.setText("　測位中");
             }
-
         }
     }
 
@@ -396,29 +383,25 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
     class GPS_ServiceReceiver_ModeD extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            _Pref = getSharedPreferences(getString(R.string.PREF_KEY),
-                    ListActivity.MODE_PRIVATE);
-            String str_buff = _Pref.getString(getString(R.string.timer_state),
-                    "None");
+            _Pref = getSharedPreferences(getString(R.string.PREF_KEY), ListActivity.MODE_PRIVATE);
+            String str_buff = _Pref.getString(getString(R.string.timer_state), "None");
 
             _GPS_defm_MAP = _Pref.getInt(getString(R.string.GPS_MAP_Flg), _GPS_defm_MAP);
 
             // 測位終了 or 測位終了+測位回数オーバー
-            if (str_buff.equals("m_finish")
-                    || str_buff.equals("m_finish&num_over")) {
+            if (str_buff.equals("m_finish") || str_buff.equals("m_finish&num_over")) {
 
                 measure_num = _Pref.getLong(getString(R.string.total_num), 0);
-                success_times = _Pref
-                        .getLong(getString(R.string.success_num), 0);
+                success_times = _Pref.getLong(getString(R.string.success_num), 0);
 
-                if (m_mtimes > 0) // 回数指定あり
-                {
+                Log.d(getResources().getString(R.string.TAG),getResources().getString(R.string.PosSuccess));
+
+                if (m_mtimes > 0){ // 回数指定あり
                     tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                             + " / " + String.valueOf(m_mtimes) + "(成功回数： "
                             + String.valueOf(success_times) + ")");
                 }
-                else // 回数指定なし
-                {
+                else{ // 回数指定なし
                     tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                             + " / ∞" + "(成功回数： "
                             + String.valueOf(success_times) + ")");
@@ -427,39 +410,31 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
                 // 測位回数指定の場合の測位回数到達チェック
                 if (str_buff.equals("m_finish&num_over"))
                     tx_state.setText("　停止中");
-                //else
-                //	tx_state.setText("　一時停止中");
 
-                if(str_buff.equals("m_finish"))
-                {
+                if(str_buff.equals("m_finish")) {
                     IDO = (_Pref.getInt(getString(R.string.IDO), 0)) / 1E6;
                     KEIDO = (_Pref.getInt(getString(R.string.KEIDO), 0)) / 1E6;
 
                     tx_IDO.setText("●緯度：  " + Double.toString(IDO));
                     tx_KEIDO.setText("●経度：  " + Double.toString(KEIDO));
-
                 }
-
             }
             // タイムアウト or タイムアウト+測位回数オーバー
-            else if (str_buff.equals("timeout")
-                    || str_buff.equals("timeout&num_over")) {
+            else if (str_buff.equals("timeout") || str_buff.equals("timeout&num_over")) {
 
                 tx_IDO.setText("●緯度：  タイムアウト");
                 tx_KEIDO.setText("●経度：  タイムアウト");
                 measure_num = _Pref.getLong(getString(R.string.total_num), 0);
-                success_times = _Pref
-                        .getLong(getString(R.string.success_num), 0);
+                success_times = _Pref.getLong(getString(R.string.success_num), 0);
 
-                if (m_mtimes > 0) // 回数指定あり
-                {
+                Log.d(getResources().getString(R.string.TAG),getResources().getString(R.string.PosTimeOut));
+
+                if (m_mtimes > 0){ // 回数指定あり
                     tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                             + " / " + String.valueOf(m_mtimes) + "(成功回数： "
                             + String.valueOf(success_times) + ")");
                 }
-
-                else // 回数指定なし
-                {
+                else{ // 回数指定なし
                     tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                             + " / ∞" + "(成功回数： "
                             + String.valueOf(success_times) + ")");
@@ -470,13 +445,11 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
                     tx_state.setText("　停止中");
                 else
                     tx_state.setText("　一時停止中");
-
             }
             // 測位再開
             else if (str_buff.equals("start") || str_buff.equals("Re_start")) {
                 tx_state.setText("　測位中");
             }
-
         }
     }
 
@@ -502,6 +475,7 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
 	/* 起動時処理 */
     /************************************************************************/
 
+    @TargetApi(Build.VERSION_CODES.M)
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -527,6 +501,20 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
         // パッケージ名を取得してディレクトリパス生成
         sPath = "/sdcard/" + this.getPackageName();
 
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},1);
+            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},1);
+            return;
+        }
+
         File file = new File(sPath);
         try {
             if (!file.exists()) {
@@ -536,8 +524,7 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
         } catch (SecurityException ex) {
         }
 
-        _Pref = getSharedPreferences(getString(R.string.PREF_KEY),
-                ListActivity.MODE_PRIVATE);
+        _Pref = getSharedPreferences(getString(R.string.PREF_KEY), ListActivity.MODE_PRIVATE);
         _PrefEditor = _Pref.edit();
 
         // サービスインテントの生成
@@ -666,8 +653,7 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
             // SheredPreferenceへコミット
             _PrefEditor.commit();
         }
-        else
-        {
+        else {
             // ONボタン ON
             tbtn_on.setChecked(true);
             tbtn_on.setClickable(false);
@@ -679,58 +665,46 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
             // 機能選択の取得
             GPS_Use_Flg = _Pref.getInt(getString(R.string.GPS_Use_Flg), 1);
 
-
             // GPS測位サービス起動中_ModeA起動中
-            if (isServiceRunning(strBuff_A))
-            {
+            if (isServiceRunning(strBuff_A)) {
                 success_Flg = 0;
                 timout_Flg = 0;
 
-                Filename = String.valueOf(year)		+ String.valueOf(month)
-                        + String.valueOf(day)		+ String.valueOf(hour)
-                        + String.valueOf(minute)	+ String.valueOf(second)
+                Filename = String.valueOf(year) + String.valueOf(month)
+                        + String.valueOf(day) + String.valueOf(hour)
+                        + String.valueOf(minute) + String.valueOf(second)
                         + String.valueOf(ms);
 
                 // 変数の初期化
-                m_interval	= _Pref.getInt(getString(R.string.GPS_m_interval),
-                        _GPS_defm_interval);
-                m_timeout	= _Pref.getInt(getString(R.string.GPS_m_timeout),
-                        _GPS_defm_timeout);
-                m_mtimes	= _Pref.getLong(getString(R.string.GPS_m_mtimes),
-                        _GPS_defm_mtimes);
-                c1_delay	= _Pref.getInt(getString(R.string.GPS_c1_delay),
-                        _GPS_defc1_delay);
-                c2_delay	= _Pref.getInt(getString(R.string.GPS_c2_delay),
-                        _GPS_defc2_delay);
-                g_delay		= _Pref.getInt(getString(R.string.GPS_g_delay),
-                        _GPS_defg_delay);
-                m_delay		= _Pref.getInt(getString(R.string.GPS_m_delay),
-                        _GPS_defm_delay);
-                Log_Flg		= _Pref.getInt(getString(R.string.GPS_Log_Flg), 1);
-                gps_Flg		= _Pref.getInt(getString(R.string.gps_Flg), 1);
-                net_Flg		= _Pref.getInt(getString(R.string.net_Flg), 0);
+                m_interval	= _Pref.getInt(getString(R.string.GPS_m_interval), _GPS_defm_interval);
+                m_timeout	= _Pref.getInt(getString(R.string.GPS_m_timeout), _GPS_defm_timeout);
+                m_mtimes	= _Pref.getLong(getString(R.string.GPS_m_mtimes), _GPS_defm_mtimes);
+                c1_delay	= _Pref.getInt(getString(R.string.GPS_c1_delay), _GPS_defc1_delay);
+                c2_delay	= _Pref.getInt(getString(R.string.GPS_c2_delay), _GPS_defc2_delay);
+                g_delay	= _Pref.getInt(getString(R.string.GPS_g_delay), _GPS_defg_delay);
+                m_delay	= _Pref.getInt(getString(R.string.GPS_m_delay), _GPS_defm_delay);
+                Log_Flg	= _Pref.getInt(getString(R.string.GPS_Log_Flg), 1);
+                gps_Flg	= _Pref.getInt(getString(R.string.gps_Flg), 1);
+                net_Flg	= _Pref.getInt(getString(R.string.net_Flg), 0);
                 passive_Flg	= _Pref.getInt(getString(R.string.passive_Flg), 0);
-                MAP_Flg		= _Pref.getInt(getString(R.string.GPS_MAP_Flg), 1);
+                MAP_Flg	= _Pref.getInt(getString(R.string.GPS_MAP_Flg), 1);
                 GPS_Mode_Flg= _Pref.getInt(getString(R.string.GPS_Mode_Flg), 0);
 
-                Cold_Start_Qual_Flg		= _Pref.getInt(getString(R.string.GPS_Cold_Start_Qual_Flg), 0);
+                Cold_Start_Qual_Flg	= _Pref.getInt(getString(R.string.GPS_Cold_Start_Qual_Flg), 0);
                 Cold_Start_Other_Flg	= _Pref.getInt(getString(R.string.GPS_Cold_Start_Other_Flg), 0);
                 GPS_OneXTRA_Timer_Flg	= _Pref.getInt(getString(R.string.GPS_OneXTRA_Timer_Flg), 0);
                 GPS_OneXTRA_Data_Flg	= _Pref.getInt(getString(R.string.GPS_OneXTRA_Data_Flg), 0);
 
-                Filename= _Pref.getString(getString(R.string.file_name),
-                        _defm_filemane);
+                Filename= _Pref.getString(getString(R.string.file_name), _defm_filemane);
 
-                success_times = _Pref
-                        .getLong(getString(R.string.success_num), 0);
+                success_times = _Pref.getLong(getString(R.string.success_num), 0);
                 measure_num = _Pref.getLong(getString(R.string.total_num), 0);
                 IDO			= (_Pref.getInt(getString(R.string.IDO), 0)) / 1E6;
                 KEIDO		= (_Pref.getInt(getString(R.string.KEIDO), 0)) / 1E6;
 
                 ONbtnPushTime = _Pref.getLong(getString(R.string.ONbtn_Push_time), _defonbtn_push_time);
 
-                String str_buff = _Pref.getString(
-                        getString(R.string.timer_state), "None");
+                String str_buff = _Pref.getString(getString(R.string.timer_state), "None");
 
                 IntentFilter filter = new IntentFilter(GPS_Service_ModeA.Timer);
                 registerReceiver(receiver, filter);
@@ -739,21 +713,18 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
                 bindService(intent_A, serviceConnection, Context.BIND_AUTO_CREATE);
 
                 // 測位終了 or 測位終了+測位回数オーバー
-                if (str_buff.equals("m_finish")
-                        || str_buff.equals("m_finish&num_over")) {
+                if (str_buff.equals("m_finish") || str_buff.equals("m_finish&num_over")) {
 
                     tx_IDO.setText("●緯度：  " + Double.toString(IDO));
                     tx_KEIDO.setText("●経度：  " + Double.toString(KEIDO));
 
-                    if (m_mtimes > 0) // 回数指定あり
-                    {
+                    if (m_mtimes > 0){ // 回数指定あり
                         tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                                 + " / " + String.valueOf(m_mtimes) + "(成功回数： "
                                 + String.valueOf(success_times) + ")");
                     }
 
-                    else // 回数指定なし
-                    {
+                    else {// 回数指定なし
                         tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                                 + " / ∞" + "(成功回数： "
                                 + String.valueOf(success_times) + ")");
@@ -764,24 +735,19 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
                         tx_state.setText("　停止中");
                     else
                         tx_state.setText("　一時停止中");
-
                 }
                 // タイムアウト or タイムアウト+測位回数オーバー
-                else if (str_buff.equals("timeout")
-                        || str_buff.equals("timeout&num_over")) {
-
+                else if (str_buff.equals("timeout") || str_buff.equals("timeout&num_over")) {
                     tx_IDO.setText("●緯度：  タイムアウト");
                     tx_KEIDO.setText("●経度：  タイムアウト");
 
-                    if (m_mtimes > 0) // 回数指定あり
-                    {
+                    if (m_mtimes > 0) {// 回数指定あり
                         tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                                 + " / " + String.valueOf(m_mtimes) + "(成功回数： "
                                 + String.valueOf(success_times) + ")");
                     }
 
-                    else // 回数指定なし
-                    {
+                    else {// 回数指定なし
                         tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                                 + " / ∞" + "(成功回数： "
                                 + String.valueOf(success_times) + ")");
@@ -798,37 +764,28 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
                 else if (str_buff.equals("Re_start")) {
                     tx_state.setText("　測位中");
                 }
-
             }
             // GPS測位サービス_ModeB起動中
-            else if (isServiceRunning(strBuff_B))
-            {
+            else if (isServiceRunning(strBuff_B)) {
                 success_Flg = 0;
                 timout_Flg = 0;
 
-                Filename = String.valueOf(year)		+ String.valueOf(month)
+                Filename = String.valueOf(year)	+ String.valueOf(month)
                         + String.valueOf(day)		+ String.valueOf(hour)
                         + String.valueOf(minute)	+ String.valueOf(second)
                         + String.valueOf(ms);
 
                 // 変数の初期化
-                m_interval	= _Pref.getInt(getString(R.string.GPS_m_interval),
-                        _GPS_defm_interval);
-                m_timeout	= _Pref.getInt(getString(R.string.GPS_m_timeout),
-                        _GPS_defm_timeout);
-                m_mtimes	= _Pref.getLong(getString(R.string.GPS_m_mtimes),
-                        _GPS_defm_mtimes);
-                c1_delay	= _Pref.getInt(getString(R.string.GPS_c1_delay),
-                        _GPS_defc1_delay);
-                c2_delay	= _Pref.getInt(getString(R.string.GPS_c2_delay),
-                        _GPS_defc2_delay);
-                g_delay		= _Pref.getInt(getString(R.string.GPS_g_delay),
-                        _GPS_defg_delay);
-                m_delay		= _Pref.getInt(getString(R.string.GPS_m_delay),
-                        _GPS_defm_delay);
-                Log_Flg		= _Pref.getInt(getString(R.string.GPS_Log_Flg), 1);
-                gps_Flg		= _Pref.getInt(getString(R.string.gps_Flg), 1);
-                net_Flg		= _Pref.getInt(getString(R.string.net_Flg), 0);
+                m_interval	= _Pref.getInt(getString(R.string.GPS_m_interval), _GPS_defm_interval);
+                m_timeout	= _Pref.getInt(getString(R.string.GPS_m_timeout), _GPS_defm_timeout);
+                m_mtimes	= _Pref.getLong(getString(R.string.GPS_m_mtimes), _GPS_defm_mtimes);
+                c1_delay	= _Pref.getInt(getString(R.string.GPS_c1_delay), _GPS_defc1_delay);
+                c2_delay	= _Pref.getInt(getString(R.string.GPS_c2_delay), _GPS_defc2_delay);
+                g_delay	= _Pref.getInt(getString(R.string.GPS_g_delay), _GPS_defg_delay);
+                m_delay	= _Pref.getInt(getString(R.string.GPS_m_delay), _GPS_defm_delay);
+                Log_Flg	= _Pref.getInt(getString(R.string.GPS_Log_Flg), 1);
+                gps_Flg	= _Pref.getInt(getString(R.string.gps_Flg), 1);
+                net_Flg	= _Pref.getInt(getString(R.string.net_Flg), 0);
                 passive_Flg	= _Pref.getInt(getString(R.string.passive_Flg), 0);
                 MAP_Flg		= _Pref.getInt(getString(R.string.GPS_MAP_Flg), 1);
                 GPS_Mode_Flg= _Pref.getInt(getString(R.string.GPS_Mode_Flg), 0);
@@ -838,19 +795,15 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
                 GPS_OneXTRA_Timer_Flg	= _Pref.getInt(getString(R.string.GPS_OneXTRA_Timer_Flg), 0);
                 GPS_OneXTRA_Data_Flg	= _Pref.getInt(getString(R.string.GPS_OneXTRA_Data_Flg), 0);
 
-                Filename= _Pref.getString(getString(R.string.file_name),
-                        _defm_filemane);
-
-                success_times = _Pref
-                        .getLong(getString(R.string.success_num), 0);
+                Filename= _Pref.getString(getString(R.string.file_name), _defm_filemane);
+                success_times = _Pref.getLong(getString(R.string.success_num), 0);
                 measure_num = _Pref.getLong(getString(R.string.total_num), 0);
                 IDO			= (_Pref.getInt(getString(R.string.IDO), 0)) / 1E6;
                 KEIDO		= (_Pref.getInt(getString(R.string.KEIDO), 0)) / 1E6;
 
                 ONbtnPushTime = _Pref.getLong(getString(R.string.ONbtn_Push_time), _defonbtn_push_time);
 
-                String str_buff = _Pref.getString(
-                        getString(R.string.timer_state), "None");
+                String str_buff = _Pref.getString(getString(R.string.timer_state), "None");
 
                 IntentFilter filter = new IntentFilter(GPS_Service_ModeB.Timer);
                 registerReceiver(receiver_ModeB, filter);
@@ -859,21 +812,18 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
                 bindService(intent_B, serviceConnection_ModeB, Context.BIND_AUTO_CREATE);
 
                 // 測位終了 or 測位終了+測位回数オーバー
-                if (str_buff.equals("m_finish")
-                        || str_buff.equals("m_finish&num_over")) {
+                if (str_buff.equals("m_finish") || str_buff.equals("m_finish&num_over")) {
 
                     tx_IDO.setText("●緯度：  " + Double.toString(IDO));
                     tx_KEIDO.setText("●経度：  " + Double.toString(KEIDO));
 
-                    if (m_mtimes > 0) // 回数指定あり
-                    {
+                    if (m_mtimes > 0){ // 回数指定あり
                         tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                                 + " / " + String.valueOf(m_mtimes) + "(成功回数： "
                                 + String.valueOf(success_times) + ")");
                     }
 
-                    else // 回数指定なし
-                    {
+                    else { // 回数指定なし
                         tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                                 + " / ∞" + "(成功回数： "
                                 + String.valueOf(success_times) + ")");
@@ -884,24 +834,20 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
                         tx_state.setText("　停止中");
                     else
                         tx_state.setText("　一時停止中");
-
                 }
                 // タイムアウト or タイムアウト+測位回数オーバー
-                else if (str_buff.equals("timeout")
-                        || str_buff.equals("timeout&num_over")) {
+                else if (str_buff.equals("timeout") || str_buff.equals("timeout&num_over")) {
 
                     tx_IDO.setText("●緯度：  タイムアウト");
                     tx_KEIDO.setText("●経度：  タイムアウト");
 
-                    if (m_mtimes > 0) // 回数指定あり
-                    {
+                    if (m_mtimes > 0) {// 回数指定あり
                         tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                                 + " / " + String.valueOf(m_mtimes) + "(成功回数： "
                                 + String.valueOf(success_times) + ")");
                     }
 
-                    else // 回数指定なし
-                    {
+                    else {// 回数指定なし
                         tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                                 + " / ∞" + "(成功回数： "
                                 + String.valueOf(success_times) + ")");
@@ -918,11 +864,9 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
                 else if (str_buff.equals("Re_start")) {
                     tx_state.setText("　測位中");
                 }
-
             }
             // GPS測位サービス_ModeC起動中
-            else if (isServiceRunning(strBuff_C))
-            {
+            else if (isServiceRunning(strBuff_C)) {
                 success_Flg = 0;
                 timout_Flg = 0;
 
@@ -932,45 +876,35 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
                         + String.valueOf(ms);
 
                 // 変数の初期化
-                m_interval	= _Pref.getInt(getString(R.string.GPS_m_interval),
-                        _GPS_defm_interval);
-                m_timeout	= _Pref.getInt(getString(R.string.GPS_m_timeout),
-                        _GPS_defm_timeout);
-                m_mtimes	= _Pref.getLong(getString(R.string.GPS_m_mtimes),
-                        _GPS_defm_mtimes);
-                c1_delay	= _Pref.getInt(getString(R.string.GPS_c1_delay),
-                        _GPS_defc1_delay);
-                c2_delay	= _Pref.getInt(getString(R.string.GPS_c2_delay),
-                        _GPS_defc2_delay);
-                g_delay		= _Pref.getInt(getString(R.string.GPS_g_delay),
-                        _GPS_defg_delay);
-                m_delay		= _Pref.getInt(getString(R.string.GPS_m_delay),
-                        _GPS_defm_delay);
-                Log_Flg		= _Pref.getInt(getString(R.string.GPS_Log_Flg), 1);
-                gps_Flg		= _Pref.getInt(getString(R.string.gps_Flg), 1);
-                net_Flg		= _Pref.getInt(getString(R.string.net_Flg), 0);
+                m_interval	= _Pref.getInt(getString(R.string.GPS_m_interval), _GPS_defm_interval);
+                m_timeout	= _Pref.getInt(getString(R.string.GPS_m_timeout), _GPS_defm_timeout);
+                m_mtimes	= _Pref.getLong(getString(R.string.GPS_m_mtimes), _GPS_defm_mtimes);
+                c1_delay	= _Pref.getInt(getString(R.string.GPS_c1_delay), _GPS_defc1_delay);
+                c2_delay	= _Pref.getInt(getString(R.string.GPS_c2_delay), _GPS_defc2_delay);
+                g_delay	= _Pref.getInt(getString(R.string.GPS_g_delay), _GPS_defg_delay);
+                m_delay	= _Pref.getInt(getString(R.string.GPS_m_delay), _GPS_defm_delay);
+                Log_Flg	= _Pref.getInt(getString(R.string.GPS_Log_Flg), 1);
+                gps_Flg	= _Pref.getInt(getString(R.string.gps_Flg), 1);
+                net_Flg	= _Pref.getInt(getString(R.string.net_Flg), 0);
                 passive_Flg	= _Pref.getInt(getString(R.string.passive_Flg), 0);
                 MAP_Flg		= _Pref.getInt(getString(R.string.GPS_MAP_Flg), 1);
                 GPS_Mode_Flg= _Pref.getInt(getString(R.string.GPS_Mode_Flg), 0);
 
-                Cold_Start_Qual_Flg		= _Pref.getInt(getString(R.string.GPS_Cold_Start_Qual_Flg), 0);
+                Cold_Start_Qual_Flg = _Pref.getInt(getString(R.string.GPS_Cold_Start_Qual_Flg), 0);
                 Cold_Start_Other_Flg	= _Pref.getInt(getString(R.string.GPS_Cold_Start_Other_Flg), 0);
-                GPS_OneXTRA_Timer_Flg	= _Pref.getInt(getString(R.string.GPS_OneXTRA_Timer_Flg), 0);
+                GPS_OneXTRA_Timer_Flg= _Pref.getInt(getString(R.string.GPS_OneXTRA_Timer_Flg), 0);
                 GPS_OneXTRA_Data_Flg	= _Pref.getInt(getString(R.string.GPS_OneXTRA_Data_Flg), 0);
 
-                Filename= _Pref.getString(getString(R.string.file_name),
-                        _defm_filemane);
+                Filename= _Pref.getString(getString(R.string.file_name), _defm_filemane);
 
-                success_times = _Pref
-                        .getLong(getString(R.string.success_num), 0);
+                success_times = _Pref.getLong(getString(R.string.success_num), 0);
                 measure_num = _Pref.getLong(getString(R.string.total_num), 0);
                 IDO			= (_Pref.getInt(getString(R.string.IDO), 0)) / 1E6;
                 KEIDO		= (_Pref.getInt(getString(R.string.KEIDO), 0)) / 1E6;
 
                 ONbtnPushTime = _Pref.getLong(getString(R.string.ONbtn_Push_time), _defonbtn_push_time);
 
-                String str_buff = _Pref.getString(
-                        getString(R.string.timer_state), "None");
+                String str_buff = _Pref.getString(getString(R.string.timer_state), "None");
 
                 IntentFilter filter = new IntentFilter(GPS_Service_ModeC.Timer);
                 registerReceiver(receiver_ModeC, filter);
@@ -979,8 +913,7 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
                 bindService(intent_C, serviceConnection_ModeC, Context.BIND_AUTO_CREATE);
 
                 // 測位終了 or 測位終了+測位回数オーバー
-                if (str_buff.equals("m_finish")
-                        || str_buff.equals("m_finish&num_over")) {
+                if (str_buff.equals("m_finish") || str_buff.equals("m_finish&num_over")) {
 
                     tx_IDO.setText("●緯度：  " + Double.toString(IDO));
                     tx_KEIDO.setText("●経度：  " + Double.toString(KEIDO));
@@ -992,11 +925,9 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
                         tx_state.setText("　停止中");
                     else
                         tx_state.setText("　一時停止中");
-
                 }
                 // タイムアウト or タイムアウト+測位回数オーバー
-                else if (str_buff.equals("timeout")
-                        || str_buff.equals("timeout&num_over")) {
+                else if (str_buff.equals("timeout") || str_buff.equals("timeout&num_over")) {
 
                     tx_IDO.setText("●緯度：  タイムアウト");
                     tx_KEIDO.setText("●経度：  タイムアウト");
@@ -1008,18 +939,14 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
                         tx_state.setText("　停止中");
                     else
                         tx_state.setText("　一時停止中");
-
                 }
                 // 測位再開
                 else if (str_buff.equals("Re_start")) {
                     tx_state.setText("　測位中");
                 }
-
             }
-
             // GPS測位サービス_ModeD起動中
-            else if (isServiceRunning(strBuff_D))
-            {
+            else if (isServiceRunning(strBuff_D)) {
                 success_Flg = 0;
                 timout_Flg = 0;
 
@@ -1029,20 +956,13 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
                         + String.valueOf(ms);
 
                 // 変数の初期化
-                m_interval	= _Pref.getInt(getString(R.string.GPS_m_interval),
-                        _GPS_defm_interval);
-                m_timeout	= _Pref.getInt(getString(R.string.GPS_m_timeout),
-                        _GPS_defm_timeout);
-                m_mtimes	= _Pref.getLong(getString(R.string.GPS_m_mtimes),
-                        _GPS_defm_mtimes);
-                c1_delay	= _Pref.getInt(getString(R.string.GPS_c1_delay),
-                        _GPS_defc1_delay);
-                c2_delay	= _Pref.getInt(getString(R.string.GPS_c2_delay),
-                        _GPS_defc2_delay);
-                g_delay		= _Pref.getInt(getString(R.string.GPS_g_delay),
-                        _GPS_defg_delay);
-                m_delay		= _Pref.getInt(getString(R.string.GPS_m_delay),
-                        _GPS_defm_delay);
+                m_interval	= _Pref.getInt(getString(R.string.GPS_m_interval), _GPS_defm_interval);
+                m_timeout	= _Pref.getInt(getString(R.string.GPS_m_timeout), _GPS_defm_timeout);
+                m_mtimes	= _Pref.getLong(getString(R.string.GPS_m_mtimes), _GPS_defm_mtimes);
+                c1_delay	= _Pref.getInt(getString(R.string.GPS_c1_delay), _GPS_defc1_delay);
+                c2_delay	= _Pref.getInt(getString(R.string.GPS_c2_delay), _GPS_defc2_delay);
+                g_delay		= _Pref.getInt(getString(R.string.GPS_g_delay), _GPS_defg_delay);
+                m_delay		= _Pref.getInt(getString(R.string.GPS_m_delay), _GPS_defm_delay);
                 Log_Flg		= _Pref.getInt(getString(R.string.GPS_Log_Flg), 1);
                 gps_Flg		= _Pref.getInt(getString(R.string.gps_Flg), 1);
                 net_Flg		= _Pref.getInt(getString(R.string.net_Flg), 0);
@@ -1055,19 +975,16 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
                 GPS_OneXTRA_Timer_Flg	= _Pref.getInt(getString(R.string.GPS_OneXTRA_Timer_Flg), 0);
                 GPS_OneXTRA_Data_Flg	= _Pref.getInt(getString(R.string.GPS_OneXTRA_Data_Flg), 0);
 
-                Filename= _Pref.getString(getString(R.string.file_name),
-                        _defm_filemane);
+                Filename= _Pref.getString(getString(R.string.file_name), _defm_filemane);
 
-                success_times = _Pref
-                        .getLong(getString(R.string.success_num), 0);
+                success_times = _Pref.getLong(getString(R.string.success_num), 0);
                 measure_num = _Pref.getLong(getString(R.string.total_num), 0);
                 IDO			= (_Pref.getInt(getString(R.string.IDO), 0)) / 1E6;
                 KEIDO		= (_Pref.getInt(getString(R.string.KEIDO), 0)) / 1E6;
 
                 ONbtnPushTime = _Pref.getLong(getString(R.string.ONbtn_Push_time), _defonbtn_push_time);
 
-                String str_buff = _Pref.getString(
-                        getString(R.string.timer_state), "None");
+                String str_buff = _Pref.getString(getString(R.string.timer_state), "None");
 
                 IntentFilter filter = new IntentFilter(GPS_Service_ModeD.Timer);
                 registerReceiver(receiver_ModeD, filter);
@@ -1076,21 +993,18 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
                 bindService(intent_D, serviceConnection_ModeD, Context.BIND_AUTO_CREATE);
 
                 // 測位終了 or 測位終了+測位回数オーバー
-                if (str_buff.equals("m_finish")
-                        || str_buff.equals("m_finish&num_over")) {
+                if (str_buff.equals("m_finish") || str_buff.equals("m_finish&num_over")) {
 
                     tx_IDO.setText("●緯度：  " + Double.toString(IDO));
                     tx_KEIDO.setText("●経度：  " + Double.toString(KEIDO));
 
-                    if (m_mtimes > 0) // 回数指定あり
-                    {
+                    if (m_mtimes > 0) {// 回数指定あり
                         tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                                 + " / " + String.valueOf(m_mtimes) + "(成功回数： "
                                 + String.valueOf(success_times) + ")");
                     }
 
-                    else // 回数指定なし
-                    {
+                    else {// 回数指定なし
                         tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                                 + " / ∞" + "(成功回数： "
                                 + String.valueOf(success_times) + ")");
@@ -1104,21 +1018,18 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
 
                 }
                 // タイムアウト or タイムアウト+測位回数オーバー
-                else if (str_buff.equals("timeout")
-                        || str_buff.equals("timeout&num_over")) {
+                else if (str_buff.equals("timeout") || str_buff.equals("timeout&num_over")) {
 
                     tx_IDO.setText("●緯度：  タイムアウト");
                     tx_KEIDO.setText("●経度：  タイムアウト");
 
-                    if (m_mtimes > 0) // 回数指定あり
-                    {
+                    if (m_mtimes > 0) {// 回数指定あり
                         tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                                 + " / " + String.valueOf(m_mtimes) + "(成功回数： "
                                 + String.valueOf(success_times) + ")");
                     }
 
-                    else // 回数指定なし
-                    {
+                    else {// 回数指定なし
                         tx_NUM.setText("●測位回数：" + String.valueOf(measure_num)
                                 + " / ∞" + "(成功回数： "
                                 + String.valueOf(success_times) + ")");
@@ -1157,18 +1068,16 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
     /************************************************************************/
 
     @Override
-    public void onClick(View v)
-    {
+    public void onClick(View v) {
         // ONが押された
-        if (v.equals(tbtn_on))
-        {
+        if (v.equals(tbtn_on)) {
+            Log.d(getResources().getString(R.string.TAG),getResources().getString(R.string.PosStartOnButton));
             tbtn_on.setChecked(true);
             tbtn_on.setClickable(false);
             tbtn_off.setChecked(false);
             tbtn_off.setClickable(true);
 
-            _Pref = getSharedPreferences(getString(R.string.PREF_KEY),
-                    ListActivity.MODE_PRIVATE);
+            _Pref = getSharedPreferences(getString(R.string.PREF_KEY), ListActivity.MODE_PRIVATE);
             _PrefEditor = _Pref.edit();
 
             // ボタン押下時刻
@@ -1183,8 +1092,7 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
             // 測位モード選択の取得
             GPS_Mode_Flg = _Pref.getInt(getString(R.string.GPS_Mode_Flg), 0);
 
-            if (GPS_Use_Flg == 1)
-            {
+            if (GPS_Use_Flg == 1) {
                 measure_num = 0;
                 success_times = 0;
                 success_Flg = 0;
@@ -1200,26 +1108,19 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
                 m_mtimes = _Pref.getLong(getString(R.string.GPS_m_mtimes), 0);
 
                 // 測位回数表示処理
-                if(GPS_Mode_Flg == 2)					// ModeC?
-                {
+                if(GPS_Mode_Flg == 2)	{				// ModeC?
                     tx_NUM.setText("●測位回数：Single Shot");
                 }
-                else
-                {
-                    if (m_mtimes > 0) // 回数指定あり
-                    {
-                        tx_NUM.setText(String.valueOf("●測位回数：" + measure_num
-                                + " / " + m_mtimes));
+                else {
+                    if (m_mtimes > 0) {// 回数指定あり
+                        tx_NUM.setText(String.valueOf("●測位回数：" + measure_num + " / " + m_mtimes));
                     }
-                    else // 回数指定なし
-                    {
-                        tx_NUM.setText(String.valueOf("●測位回数：" + measure_num
-                                + " / ∞"));
+                    else {// 回数指定なし
+                        tx_NUM.setText(String.valueOf("●測位回数：" + measure_num + " / ∞"));
                     }
                 }
                 // モードA
-                if(GPS_Mode_Flg == 0)
-                {
+                if(GPS_Mode_Flg == 0) {
                     // サービスを開始
                     startService(intent_A);
                     IntentFilter filter = new IntentFilter(GPS_Service_ModeA.Timer);
@@ -1229,8 +1130,7 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
                     bindService(intent_A, serviceConnection, Context.BIND_AUTO_CREATE);
                 }
                 // モードB
-                else if(GPS_Mode_Flg == 1)
-                {
+                else if(GPS_Mode_Flg == 1) {
                     // サービスを開始
                     startService(intent_B);
                     IntentFilter filter = new IntentFilter(GPS_Service_ModeB.Timer);
@@ -1240,8 +1140,7 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
                     bindService(intent_B, serviceConnection_ModeB, Context.BIND_AUTO_CREATE);
                 }
                 // モードC
-                else if(GPS_Mode_Flg == 2)
-                {
+                else if(GPS_Mode_Flg == 2) {
                     // サービスを開始
                     startService(intent_C);
                     IntentFilter filter = new IntentFilter(GPS_Service_ModeC.Timer);
@@ -1251,8 +1150,7 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
                     bindService(intent_C, serviceConnection_ModeC, Context.BIND_AUTO_CREATE);
                 }
                 // モードD
-                else if(GPS_Mode_Flg == 3)
-                {
+                else if(GPS_Mode_Flg == 3) {
                     // サービスを開始
                     startService(intent_D);
                     IntentFilter filter = new IntentFilter(GPS_Service_ModeD.Timer);
@@ -1262,44 +1160,38 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
                     bindService(intent_D, serviceConnection_ModeD, Context.BIND_AUTO_CREATE);
                 }
             }
-
         }
 
         // OFFが押された
-        if (v.equals(tbtn_off))
-        {
+        if (v.equals(tbtn_off)) {
+            Log.d(getResources().getString(R.string.TAG),getResources().getString(R.string.PosStopOnButton));
             tbtn_off.setChecked(true);
             tbtn_off.setClickable(false);
             tbtn_on.setChecked(false);
             tbtn_on.setClickable(true);
             tx_state.setText("　停止中");
 
-            if (GPS_Use_Flg == 1)
-            {
+            if (GPS_Use_Flg == 1) {
                 // モードA
-                if(GPS_Mode_Flg == 0)
-                {
+                if(GPS_Mode_Flg == 0) {
                     unbindService(serviceConnection);	// バインド解除
                     unregisterReceiver(receiver);		// 登録解除
                     GPS_Service_ModeA.stopSelf();				// サービスは必要ないので終了させる。
                 }
                 // モードB
-                else if(GPS_Mode_Flg == 1)
-                {
+                else if(GPS_Mode_Flg == 1) {
                     unbindService(serviceConnection_ModeB);	// バインド解除
                     unregisterReceiver(receiver_ModeB);		// 登録解除
                     GPS_Service_ModeB.stopSelf();			// サービスは必要ないので終了させる。
                 }
                 // モードC
-                else if(GPS_Mode_Flg == 2)
-                {
+                else if(GPS_Mode_Flg == 2) {
                     unbindService(serviceConnection_ModeC);	// バインド解除
                     unregisterReceiver(receiver_ModeC);		// 登録解除
                     GPS_Service_ModeC.stopSelf();			// サービスは必要ないので終了させる。
                 }
                 // モードD
-                else if(GPS_Mode_Flg == 3)
-                {
+                else if(GPS_Mode_Flg == 3) {
                     unbindService(serviceConnection_ModeD);	// バインド解除
                     unregisterReceiver(receiver_ModeD);		// 登録解除
                     GPS_Service_ModeD.stopSelf();			// サービスは必要ないので終了させる。
@@ -1309,8 +1201,7 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
     }
 
     @Override
-    public void onStart()
-    {
+    public void onStart() {
         _Pref = getSharedPreferences(getString(R.string.PREF_KEY),
                 ListActivity.MODE_PRIVATE);
         // 設定の表示
@@ -1334,20 +1225,17 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
             strBuff = strBuff + "　Cold設定";
 
 
-        if (isServiceRunning(this.getPackageName() + ".GPS_Service_ModeC"))	// ModeC起動中
-        {
+        if (isServiceRunning(this.getPackageName() + ".GPS_Service_ModeC"))	{// ModeC起動中
             tx_NUM.setText("●測位回数：Single Shot");
         }
         else if((!isServiceRunning(this.getPackageName() + ".GPS_Service_ModeA"))
                 && (!isServiceRunning(this.getPackageName() + ".GPS_Service_ModeB"))
                 && (!isServiceRunning(this.getPackageName() + ".GPS_Service_ModeD")))
         {
-            if(GPS_Mode_Flg == 2)					// ModeC?
-            {
+            if(GPS_Mode_Flg == 2)	{				// ModeC?
                 tx_NUM.setText("●測位回数：Single Shot");
             }
-            else
-            {
+            else {
                 tx_NUM.setText("●測位回数：  ―");
             }
         }
@@ -1372,18 +1260,6 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
         item1.setIcon(android.R.drawable.ic_menu_save);
         return super.onCreateOptionsMenu(menu);
     }
-
-    // オプションメニューが表示される度に呼び出されます
-
-    /**
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        menu.findItem(MENU1_ID).setVisible(visible);
-        menu.findItem(MENU2_ID).setVisible(visible);
-        visible = !visible;
-        return super.onPrepareOptionsMenu(menu);
-    }
-*/
     /*
      * アイテムセレクト時イベント onOptionsItemSelected
      */
@@ -1413,5 +1289,4 @@ public class SANOApplication002 extends AppCompatActivity implements OnClickList
         }
         return super.onOptionsItemSelected(item);
     }
-
 }

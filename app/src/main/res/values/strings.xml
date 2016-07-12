@@ -31,4 +31,17 @@
     <string name="GPS_m_no"			>GPS測位累計回数</string>
     <string name="file_name"		>ファイル名</string>
     <string name="ONbtn_Push_time"	>ONボタン押下時間</string>
+
+    <string name="TAG">SanoApplication002</string>
+    <string name="PosStartOnButton">PosStartButtonOn</string>
+    <string name="PosStopOnButton">PosStopButtonOn</string>
+    <string name="QualcommCold">QualcommCold</string>
+    <string name="OtherCold">OtherCold</string>
+    <string name="PosStartApiLocationUpdates">PosStartApiLocationUpdates</string>
+    <string name="PosStartApiSingleUpdate">PosStartApiSingleUpdate</string>
+    <string name="PosTimeOut">PosTimeOut</string>
+    <string name="PosSuccess">PosSuccess</string>
+    <string name="PosStop">PosStop</string>
+    <string name="PosEnd">PosEnd</string>
+    <string name="LocationChanged">LocationChanged</string>
 </resources>
